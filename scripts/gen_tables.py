@@ -84,7 +84,8 @@ def main():
     # from data/CNS_phonetic.txt. Saves four columns: CNS code, Unicode hex, character, and phonetic initial to tmp/pass3.csv.
     pass3_path = 'tmp/pass3.csv'
     cns_phonetic_path = 'data/CNS_phonetic.txt'
-    cns_to_phonetic_initial = {} # { 'CNS-CODE': 'PHONETIC_INITIAL', ... }
+    cns_to_phonetic_initials = {} # { 'CNS-CODE': ['PHONETIC_INITIAL1', 'PHONETIC_INITIAL2'], ... }
+    loaded_phonetic = 0
 
     try:
         with open(cns_phonetic_path, 'r', encoding='utf-8') as infile:
@@ -94,8 +95,12 @@ def main():
                     cns_code = parts[0]
                     phonetic = parts[1]
                     # Keep only the first character of the phonetic
-                    cns_to_phonetic_initial[cns_code] = phonetic[0] if phonetic else ''
-        print(f"Loaded {len(cns_to_phonetic_initial)} phonetic entries from {cns_phonetic_path}")
+                    if cns_code not in cns_to_phonetic_initials:
+                        cns_to_phonetic_initials[cns_code] = []
+                    if phonetic:
+                        cns_to_phonetic_initials[cns_code].append(phonetic[0])
+                        loaded_phonetic += 1
+        print(f"Loaded {loaded_phonetic} phonetic entries from {cns_phonetic_path}")
     except FileNotFoundError:
         print(f"Error: {cns_phonetic_path} not found. Cannot proceed with Step 3.")
         return
@@ -110,10 +115,14 @@ def main():
                     cns_code = parts[0]
                     unicode_hex = parts[1]
                     char = parts[2]
-                    phonetic_initial = cns_to_phonetic_initial.get(cns_code, '')
-                    outfile_pass3.write(f"{cns_code}\t{unicode_hex}\t{char}\t{phonetic_initial}\n")
-                    processed_count_pass3 += 1
+
+                    phonetic_initials = cns_to_phonetic_initials.get(cns_code, [''])
+                    # A CNS code might have multiple phonetic initials, write one line for each
+                    for initial in phonetic_initials:
+                        outfile_pass3.write(f"{cns_code}\t{unicode_hex}\t{char}\t{initial}\n")
+                        processed_count_pass3 += 1
         print(f"Step 3 completed: {processed_count_pass3} entries saved to {pass3_path}")
+
     except FileNotFoundError:
         print(f"Error: {pass2_path} not found, cannot proceed with Step 3.")
         return
