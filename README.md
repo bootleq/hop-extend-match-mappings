@@ -9,7 +9,7 @@
 
 ## 安裝
 
-確認 'runtimepath' 能找到這裡的 lua 目錄即可
+當作一般 plugin 安裝即可，只要 'runtimepath' 能找到這裡的 lua 目錄就好
 
 
 ## 設定
